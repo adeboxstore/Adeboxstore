@@ -1,0 +1,256 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>ADEBOX Store</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="assets/logo.png" type="image/png">
+  <script defer src="script.js"></script>
+</head>
+<body>
+  <header>
+    <div class="logo-banner">
+      <img src="assets/logo.png" alt="ADEBOX Logo" class="logo">
+      <h1>ADEBOX Store</h1>
+    </div>
+    <p>Exclusivement pour les apps ADEBOX – sans pub, sans cloud</p>
+    <input type="text" id="searchBar" placeholder="🔎 Rechercher une application...">
+  </header>
+
+  <main>
+    <section id="appGallery"></section>
+  </main>
+
+  <button id="addBtn">➕</button>
+
+  <!-- Formulaire d’ajout -->
+  <div id="formPopup" class="hidden">
+    <h2>📤 Ajouter une application</h2>
+    <input type="password" id="adminCode" placeholder="Code d'accès">
+    <input type="text" id="appName" placeholder="Nom de l'application">
+    <input type="text" id="appCategory" placeholder="Catégorie (Action, IA...)">
+    <textarea id="appDesc" placeholder="Description"></textarea>
+
+    <label>Fichier APK :</label>
+    <input type="file" id="apkFile" accept=".apk" onchange="showFileName('apkFile', 'apkName')">
+    <p id="apkName" class="file-name"></p>
+
+    <label>Image promo :</label>
+    <input type="file" id="appImage" accept="image/*" onchange="showFileName('appImage', 'imgName')">
+    <p id="imgName" class="file-name"></p>
+
+    <button id="publishApp">Publier</button>
+    <p class="exclusive-tag">🔐 EXCLUSIVE ADEBOX</p>
+  </div>
+</body>
+</html><style>/* 🌌 Police */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
+
+body {
+  margin: 0;
+  font-family: 'Orbitron', sans-serif;
+  background-color: #0d0d0d;
+  color: #eeeeee;
+}
+
+/* 🔥 Header */
+header {
+  background: linear-gradient(45deg, #00f0ff, #ff00d0);
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 0 20px #00f0ff50;
+}
+
+.logo-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 10px;
+}
+
+.logo {
+  width: 80px;
+  height: auto;
+  filter: drop-shadow(0 0 5px #ff00d0);
+}
+
+/* 🔎 Barre de recherche */
+#searchBar {
+  padding: 10px;
+  margin-top: 15px;
+  width: 80%;
+  max-width: 400px;
+  font-size: 1em;
+  background: #111;
+  border: 1px solid #444;
+  color: #fff;
+  border-radius: 5px;
+}
+
+/* 🧱 Galerie */
+#appGallery {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 25px;
+  padding: 30px;
+}
+
+/* 📦 Carte app */
+.appCard {
+  background-color: #1b1b1b;
+  border: 1px solid #00f0ff;
+  border-radius: 8px;
+  width: 250px;
+  padding: 15px;
+  box-shadow: 0 0 15px #00f0ff60;
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.appCard:hover {
+  transform: scale(1.05);
+}
+
+.appCard img {
+  width: 100%;
+  border-radius: 5px;
+}
+
+.appCard h3 {
+  margin: 10px 0;
+  font-size: 1.2em;
+  color: #ff00d0;
+}
+
+.appCard a {
+  text-decoration: none;
+  color: #00f0ff;
+  font-weight: bold;
+  display: inline-block;
+  margin-top: 10px;
+}
+
+/* ➕ Bouton d’ajout */
+#addBtn {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  background: #00f0ff;
+  color: #000;
+  border: none;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  font-size: 2em;
+  box-shadow: 0 0 10px #00f0ff90;
+  cursor: pointer;
+}
+
+/* 🧾 Formulaire d’ajout */
+#formPopup {
+  position: fixed;
+  bottom: 100px;
+  right: 25px;
+  background-color: #111;
+  border: 1px solid #ff00d0;
+  padding: 20px;
+  width: 300px;
+  border-radius: 10px;
+  box-shadow: 0 0 15px #ff00d080;
+  z-index: 10;
+}
+
+.hidden {
+  display: none;
+}
+
+#formPopup input,
+#formPopup textarea,
+#formPopup select {
+  width: 100%;
+  margin: 8px 0;
+  padding: 8px;
+  background: #222;
+  border: 1px solid #444;
+  color: #fff;
+  border-radius: 5px;
+}
+
+#formPopup label {
+  font-weight: bold;
+  color: #ff00d0;
+  margin-top: 10px;
+  display: block;
+}
+
+.file-name {
+  font-size: 0.9em;
+  color: #bbb;
+  margin-bottom: 10px;
+}
+
+.exclusive-tag {
+  margin-top: 10px;
+  font-weight: bold;
+  color: #ff00d0;
+  text-align: center;
+}</style><script>const gallery = document.getElementById("appGallery");
+const searchBar = document.getElementById("searchBar");
+const addBtn = document.getElementById("addBtn");
+const formPopup = document.getElementById("formPopup");
+const publishBtn = document.getElementById("publishApp");
+
+addBtn.onclick = () => formPopup.classList.toggle("hidden");
+
+function showFileName(inputId, outputId) {
+  const fileInput = document.getElementById(inputId);
+  const fileName = fileInput.files[0]?.name || "";
+  document.getElementById(outputId).textContent = `Fichier sélectionné : ${fileName}`;
+}
+
+publishBtn.onclick = () => {
+  const code = document.getElementById("adminCode").value;
+  if (code !== "Chouyou1@") {
+    alert("⛔ Code incorrect !");
+    return;
+  }
+
+  const name = document.getElementById("appName").value;
+  const category = document.getElementById("appCategory").value;
+  const desc = document.getElementById("appDesc").value;
+  const apkFile = document.getElementById("apkFile").files[0];
+  const imgFile = document.getElementById("appImage").files[0];
+
+  if (!name || !apkFile || !imgFile) {
+    alert("❗ Tous les champs sont requis.");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    const imgURL = reader.result;
+    const apkURL = URL.createObjectURL(apkFile);
+
+    const card = document.createElement("div");
+    card.className = "appCard";
+    card.setAttribute("data-category", category.toLowerCase());
+    card.innerHTML = `
+      <img src="${imgURL}" alt="${name}">
+      <h3>${name} <span class="exclusive-tag">EXCLUSIVE ADEBOX</span></h3>
+      <p>${desc}</p>
+      <a href="${apkURL}" download>📥 Installer</a>
+    `;
+    gallery.appendChild(card);
+    formPopup.classList.add("hidden");
+  };
+  reader.readAsDataURL(imgFile);
+};
+
+searchBar.oninput = () => {
+  const query = searchBar.value.toLowerCase();
+  document.querySelectorAll(".appCard").forEach(card => {
+    card.style.display = card.textContent.toLowerCase().includes(query) ? "block" : "none";
+  });
+};</script>js
